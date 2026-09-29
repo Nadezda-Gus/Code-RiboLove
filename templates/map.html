@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>РыбаLove - Карта</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        #map {
+            height: 80vh;
+            width: 100%;
+        }
+
+        /* Стиль для кнопки закрытия */
+        .close-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            margin-left: 15px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #ffcc00;
+            border-color: #6a0dad;
+        }
+
+        .close-btn img {
+            width: 40px;
+            height: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">РЫБАLOVE</div>
+        <div class="icons">
+            <a href="/" class="close-btn" title="Вернуться на главную">
+                <img src="/static/icons/Exit.png" alt="Закрыть">
+            </a>
+        </div>
+    </header>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([55.75, 37.61], 5);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        fetch('/api/spots')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(spot => {
+                    L.marker([spot.lat, spot.lng]).addTo(map)
+                        .bindPopup(spot.name);
+                });
+            });
+    </script>
+</body>
+
+</html>
