@@ -1,26 +1,27 @@
 from flask import Flask, render_template, request, jsonify
-import pyodbc
+import firebase_admin
+from firebase_admin import credentials, firestore
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 app = Flask(__name__)
-conn_str = (
-    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-    f"SERVER={os.getenv('DB_SERVER')};"
-    f"DATABASE={os.getenv('DB_NAME')};"
-    f"Trusted_Connection=yes;"
-)
+firebase_key_path = os.getenv('FIREBASE_KEY_PATH', 'firebase_key.json')
 
-app.secret_key = os.getenv('SECRET_KEY')
+try:
+    if os.path.exists(firebase_key_path):
+        cred = credentials.Certificate(firebase_key_path)
+        firebase_admin.initialize_app(cred)
+        db = firestore.client()
+        print("Firebase подключён")
+    else:
+        print(f"Файл {firebase_key_path} не найден. Работаем без БД.")
+        db = None
+except Exception as e:
+    print(f"Ошибка подключения к Firebase: {e}")
+    db = None
 
-def get_db_connection():
-    try:
-        conn = pyodbc.connect(conn_str)
-        return conn
-    except Exception as e:
-        print(f"Ошибка подключения к БД: {e}")
-        return None
+app.secret_key = os.getenv('SECRET_KEY', 'default-secret-for-dev')
 
 @app.route('/')
 def index():
@@ -28,26 +29,39 @@ def index():
 
 @app.route('/catalog')
 def catalog():
-    conn = get_db_connection()
-    if conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, name, price, image_url FROM Products")
-        products = cursor.fetchall()
-        conn.close()
+    if db is None:
+        return render_template('catalog.html', products=[])
+    try:
+        products_ref = db.collection('products').stream()
+        products = []
+        for doc in products_ref:
+            data = doc.to_dict()
+            data['id'] = doc.id
+            products.append(data)
         return render_template('catalog.html', products=products)
-    return "Ошибка БД"
+    except Exception as e:
+        print(f"Ошибка чтения из Firestore: {e}")
+        return render_template('catalog.html', products=[])
 
 @app.route('/api/spots')
 def get_spots():
-    conn = get_db_connection()
-    if conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, name, latitude, longitude FROM FishingSpots")
-        rows = cursor.fetchall()
-        spots = [{"id": row[0], "name": row[1], "lat": float(row[2]), "lng": float(row[3])} for row in rows]
-        conn.close()
+    if db is None:
+        return jsonify([])
+    try:
+        spots_ref = db.collection('fishing_spots').stream()
+        spots = []
+        for doc in spots_ref:
+            data = doc.to_dict()
+            spots.append({
+                "id": doc.id,
+                "name": data.get('name', 'Без названия'),
+                "lat": data.get('latitude', 0),
+                "lng": data.get('longitude', 0)
+            })
         return jsonify(spots)
-    return jsonify([])
+    except Exception as e:
+        print(f"Ошибка чтения из Firestore: {e}")
+        return jsonify([])
 
 @app.route('/cart')
 def cart():
@@ -62,4 +76,4 @@ def map_page():
     return render_template('map.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
