@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}РыбаLove - Лента{% endblock %}
+
+{% block content %}
+<div class="posts-page">
+
+    {# === Верхняя панель с кнопкой «Создать пост» === #}
+    <div class="posts-toolbar">
+        <button class="btn-create-post" onclick="togglePostForm()">
+            <span class="btn-create-icon">+</span>
+            <span>Создать пост</span>
+        </button>
+    </div>
+
+    {# === Форма создания (скрыта по умолчанию) === #}
+    <div class="post-form-wrapper" id="post-form-wrapper" hidden>
+        <form id="add-post-form" class="post-form">
+            <h2>Поделиться уловом</h2>
+            <input type="text" id="post-title"
+                   placeholder="Заголовок (например: Щука на 5 кг!)" required>
+            <textarea id="post-content"
+                      placeholder="Расскажи, как прошла рыбалка..." rows="4" required></textarea>
+            <input type="url" id="post-image"
+                   placeholder="Ссылка на фото (необязательно)">
+            <div class="post-form-actions">
+                <button type="submit" class="btn-add">Опубликовать</button>
+                <button type="button" class="btn-clear"
+                        onclick="togglePostForm()">Отмена</button>
+            </div>
+        </form>
+    </div>
+
+    {# === Сетка постов === #}
+    <section class="posts-grid" id="posts-grid">
+        {% for post in posts %}
+        <article class="post-card">
+            <div class="post-card-image">
+                {% if post.image_url %}
+                <img src="{{ post.image_url }}" alt="{{ post.title }}">
+                {% else %}
+                <span class="post-card-placeholder">Фото</span>
+                {% endif %}
+            </div>
+            <div class="post-card-body">
+                <h3 class="post-title">{{ post.title }}</h3>
+                <p class="post-content">{{ post.content }}</p>
+                <div class="post-meta">
+                    <span class="post-author">{{ post.author or 'Аноним' }}</span>
+                    <span class="post-date">{{ post.created_at }}</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+
+    {# === Стрелка вниз (загрузить ещё / вниз) === #}
+    <div class="posts-scroll-down" onclick="scrollDown()">
+        <span>⌄</span>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function togglePostForm() {
+        var wrapper = document.getElementById('post-form-wrapper');
+        wrapper.hidden = !wrapper.hidden;
+        if (!wrapper.hidden) {
+            document.getElementById('post-title').focus();
+        }
+    }
+
+    function scrollDown() {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    document.getElementById('add-post-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        var title   = document.getElementById('post-title').value;
+        var content = document.getElementById('post-content').value;
+        var image   = document.getElementById('post-image').value;
+
+        fetch('/add_post', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: title, content: content, image_url: image })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (result) {
+            if (result.status !== 'success') {
+                alert('Ошибка: ' + result.error);
+                return;
+            }
+
+            // удаляем сообщение "пусто"
+            var empty = document.querySelector('.empty-feed');
+            if (empty) empty.remove();
+
+            // создаём карточку
+            var grid = document.getElementById('posts-grid');
+            var card = document.createElement('article');
+            card.className = 'post-card';
+
+            var imageBlock = image
+                ? '<img src="' + image.replace(/"/g, '&quot;') + '" alt="">'
+                : '<span class="post-card-placeholder">Фото</span>';
+
+            card.innerHTML = ''
+                + '<div class="post-card-image">' + imageBlock + '</div>'
+                + '<div class="post-card-body">'
+                +   '<h3 class="post-title"></h3>'
+                +   '<p class="post-content"></p>'
+                +   '<div class="post-meta">'
+                +     '<span class="post-author">Аноним</span>'
+                +     '<span class="post-date">Только что</span>'
+                +   '</div>'
+                + '</div>';
+
+            card.querySelector('.post-title').textContent = title;
+            card.querySelector('.post-content').textContent = content;
+
+            grid.prepend(card);
+
+            this.reset();
+            togglePostForm();
+        })
+        .catch(function (err) {
+            console.error(err);
+            alert('Не удалось опубликовать пост');
+        });
+    });
+</script>
+{% endblock %}

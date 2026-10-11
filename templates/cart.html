@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}РыбаLove - Корзина{% endblock %}
+
+{% block content %}
+<main class="cart-container">
+    <h1>Корзина</h1>
+
+    {% if items %}
+        <div class="cart-list">
+            {% for item in items %}
+            <div class="cart-item">
+                <div class="cart-item-image">
+                    {% if item.image_url %}
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                    {% else %}
+                    <div class="product-image">Фото</div>
+                    {% endif %}
+                </div>
+                <div class="cart-item-info">
+                    <h3>{{ item.name }}</h3>
+                    <p class="price">{{ item.price }} ₽ × {{ item.quantity }}</p>
+                </div>
+                <div class="cart-item-actions">
+                    <span class="subtotal">{{ item.subtotal }} ₽</span>
+                    <button class="btn-remove" onclick="removeFromCart('{{ item.id }}')">Удалить</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="cart-total">
+            <h2>Итого: {{ total }} ₽</h2>
+            <button class="btn-add btn-checkout" onclick="checkout()">Оформить заказ</button>
+            <button class="btn-clear" onclick="clearCart()">Очистить корзину</button>
+        </div>
+    {% else %}
+        <div class="empty-cart">
+            <p>Корзина пуста</p>
+            <a href="/catalog" class="btn-add">Перейти в каталог</a>
+        </div>
+    {% endif %}
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function removeFromCart(productId) {
+        fetch('/api/cart/remove/' + productId, { method: 'POST' })
+            .then(function (r) { return r.json(); })
+            .then(function () { location.reload(); });
+    }
+    function clearCart() {
+        if (confirm('Очистить корзину?')) {
+            fetch('/api/cart/clear', { method: 'POST' })
+                .then(function (r) { return r.json(); })
+                .then(function () { location.reload(); });
+        }
+    }
+    function checkout() {
+        alert('Оформление заказа в разработке 🚧');
+    }
+</script>
+{% endblock %}

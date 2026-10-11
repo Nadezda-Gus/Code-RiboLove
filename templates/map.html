@@ -1,70 +1,81 @@
-<!DOCTYPE html>
-<html lang="ru">
+{% extends "base.html" %}
+{% block title %}РыбаLove - Карта{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>РыбаLove - Карта</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        #map {
-            height: 80vh;
-            width: 100%;
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map { height: 80vh; width: 100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="map"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([55.75, 37.61], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19
+    }).addTo(map);
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function addMarker(lat, lng, name, description) {
+        var popup = '<b>' + escapeHtml(name) + '</b>';
+        if (description) {
+            popup += '<br>' + escapeHtml(description);
         }
+        L.marker([lat, lng]).addTo(map).bindPopup(popup);
+    }
 
-        /* Стиль для кнопки закрытия */
-        .close-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: #fff;
-            margin-left: 15px;
-            transition: all 0.2s;
-        }
+    map.on('click', function (e) {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+        var name = prompt('Введите название места ловли:');
+        if (!name) return;
 
-        .close-btn:hover {
-            background: #ffcc00;
-            border-color: #6a0dad;
-        }
+        fetch('/api/spots', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, lat: lat, lng: lng })
+        })
+        .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function () {
+            addMarker(lat, lng, name);
+        })
+        .catch(function (err) {
+            alert('Не удалось сохранить: ' + err.message);
+        });
+    });
 
-        .close-btn img {
-            width: 40px;
-            height: 40px;
-        }
-    </style>
-</head>
-
-<body>
-    <header>
-        <div class="logo">РЫБАLOVE</div>
-        <div class="icons">
-            <a href="/" class="close-btn" title="Вернуться на главную">
-                <img src="/static/icons/Exit.png" alt="Закрыть">
-            </a>
-        </div>
-    </header>
-
-    <div id="map"></div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([55.75, 37.61], 5);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        fetch('/api/spots')
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(spot => {
-                    L.marker([spot.lat, spot.lng]).addTo(map)
-                        .bindPopup(spot.name);
-                });
+    fetch('/api/spots')
+        .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function (data) {
+            console.log('Загружено мест:', data.length, data);
+            if (!Array.isArray(data) || data.length === 0) {
+                console.warn('Нет мест для отображения');
+                return;
+            }
+            data.forEach(function (spot) {
+                addMarker(spot.lat, spot.lng, spot.name, spot.description);
             });
-    </script>
-</body>
-
-</html>
+        })
+        .catch(function (err) {
+            console.error('Ошибка загрузки мест:', err);
+        });
+</script>
+{% endblock %}

@@ -3,41 +3,126 @@
     src: url('../fonts/pinzelan-cyrillic.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
+    font-display: swap;
 }
 
 body {
-    font-family: FishFont;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                 Roboto, 'Helvetica Neue', Arial, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
+    color: #222;
+    line-height: 1.5;
+}
+
+.logo {
+    font-family: 'FishFont', cursive;
+    font-weight: bold;
+    font-size: 28px;
+    color: #6a0dad;
+    text-decoration: none;
+    letter-spacing: 1px;
 }
 
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #fff;
+    background: #ffd60a;                     /* жёлтый */
     padding: 10px 20px;
-    border-bottom: 2px solid #ffcc00;
+    border-bottom: 2px solid #e6c200;
+    gap: 20px;
 }
 
 .logo {
-    font-family: FishFont;
+    font-family: 'FishFont', cursive;
     font-weight: bold;
-    font-size: 24px;
-    color: #6a0dad;
+    font-size: 28px;
+    color: #4a0f7a;
+    text-decoration: none;
+    letter-spacing: 1px;
 }
 
+/* Поиск — фиолетовый */
+.search-bar {
+    display: flex;
+    align-items: center;
+    flex: 1;                                 /* растягивается */
+    max-width: 560px;
+    background: #b15dff;
+    border-radius: 6px;
+    padding: 4px 6px 4px 12px;
+    gap: 6px;
+}
 .search-bar input {
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 6px 0;
+}
+.search-bar input::placeholder {
+    color: rgba(255, 255, 255, 0.75);
+}
+.search-bar button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+}
+.search-bar button img {
+    width: 22px;
+    height: 22px;
+    filter: brightness(0) invert(1);         /* делаем иконку белой */
 }
 
-.icons span {
-    font-size: 20px;
-    margin-left: 15px;
-    cursor: pointer;
+/* Иконки в хедере */
+.icons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.icon-link img {
+    width: 32px;
+    height: 32px;
+}
+
+.icons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+.icon-link img {
+    width: 32px;
+    height: 32px;
+}
+
+.cart-link { position: relative; }
+.cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #e53935;
+    color: #fff;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
+    padding: 0 4px;
+    font-family: inherit;
 }
 
 .slider-container {
@@ -50,21 +135,16 @@ header {
     align-items: center;
     overflow: hidden;
 }
-
 .slide {
     display: none;
     font-size: 24px;
+    font-family: inherit;
 }
-
-.slide.active {
-    display: block;
-}
-
+.slide.active { display: block; }
 .dots {
     position: absolute;
     bottom: 10px;
 }
-
 .dot {
     height: 10px;
     width: 10px;
@@ -73,19 +153,14 @@ header {
     display: inline-block;
     margin: 0 5px;
 }
+.dot.active { background: #6a0dad; }
 
-.dot.active {
-    background: #6a0dad;
-}
-
-/* Каталог */
 .catalog-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
     padding: 20px;
 }
-
 .product-card {
     background: #fff;
     padding: 15px;
@@ -93,19 +168,25 @@ header {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
-
 .product-image {
     background: #f9f9b0;
     height: 150px;
     border-radius: 4px;
     margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    overflow: hidden;
 }
-
+img.product-image {
+    object-fit: cover;
+    width: 100%;
+}
 .price {
     font-weight: bold;
     color: #333;
 }
-
 .btn-add {
     background: #6a0dad;
     color: #fff;
@@ -113,4 +194,390 @@ header {
     padding: 8px 15px;
     border-radius: 4px;
     cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+.btn-add:hover { background: #531b8c; }
+
+.cart-container,
+.posts-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.cart-container h1 { margin-top: 0; }
+
+.cart-list { display: flex; flex-direction: column; gap: 12px; }
+.cart-item {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+.cart-item-image img,
+.cart-item-image .product-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #f9f9b0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+.cart-item-info { flex: 1; }
+.cart-item-info h3 { margin: 0 0 4px; font-size: 16px; }
+.cart-item-actions { text-align: right; }
+.subtotal { display: block; font-weight: bold; margin-bottom: 6px; }
+
+.cart-total {
+    margin-top: 20px;
+    text-align: right;
+}
+.cart-total h2 { margin: 0 0 10px; }
+.btn-clear, .btn-remove {
+    background: #eee;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 8px;
+    font-family: inherit;
+}
+.btn-remove { background: #ffcdd2; color: #b71c1c; }
+.btn-clear:hover { background: #ddd; }
+.btn-remove:hover { background: #ef9a9a; }
+
+.empty-cart { text-align: center; padding: 40px 0; }
+.empty-cart .btn-add {
+    display: inline-block;
+    text-decoration: none;
+    margin-top: 10px;
+}
+
+.post-form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+.post-form h2 { margin-top: 0; }
+.post-form input,
+.post-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+}
+.post-form textarea { resize: vertical; }
+
+.posts-feed h2 { margin-top: 0; }
+.post-card {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+.post-title { margin: 0 0 6px; font-size: 18px; }
+.post-content { margin: 0; white-space: pre-wrap; }
+
+.empty-feed { color: #888; font-style: italic; }
+
+#map {
+    height: 80vh;
+    width: 100%;
+}
+.close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    transition: all 0.2s;
+}
+.close-btn:hover {
+    background: #ffcc00;
+    border-color: #6a0dad;
+}
+.close-btn img {
+    width: 40px;
+    height: 40px;
+}
+
+.posts-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+}
+
+/* ---- Верхняя панель с кнопкой «Создать пост» ---- */
+.posts-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+}
+
+.btn-create-post {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #c77dff;
+    color: #2b0a4a;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 18px 8px 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+.btn-create-post:hover {
+    background: #b15dff;
+    transform: translateY(-1px);
+}
+.btn-create-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #6a0dad;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* ---- Форма создания поста ---- */
+.post-form-wrapper {
+    margin-bottom: 20px;
+}
+.post-form-wrapper[hidden] {
+    display: none;
+}
+.post-form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.post-form h2 {
+    margin: 0 0 12px;
+    font-size: 18px;
+}
+.post-form input,
+.post-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+}
+.post-form textarea {
+    resize: vertical;
+}
+.post-form-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* ---- Сетка постов ---- */
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+@media (max-width: 900px) {
+    .posts-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .posts-grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Карточка поста ---- */
+.post-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Картинка / плейсхолдер */
+.post-card-image {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background: #f3e7a1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.post-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.post-card-placeholder {
+    color: #b3a35a;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Тело карточки */
+.post-card-body {
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.post-title {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+}
+.post-content {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: #444;
+    line-height: 1.4;
+    flex: 1;
+
+    /* обрезка длинного текста в 3 строки */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.post-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #999;
+    margin-top: auto;
+}
+
+/* ---- Стрелка вниз ---- */
+.posts-scroll-down {
+    display: flex;
+    justify-content: center;
+    margin: 30px 0 10px;
+    cursor: pointer;
+    user-select: none;
+}
+.posts-scroll-down span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #6a0dad;
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(106, 13, 173, 0.35);
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+.posts-scroll-down:hover span {
+    background: #531b8c;
+    transform: translateY(2px);
+}
+
+/* ---- Пустая лента ---- */
+.empty-feed {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 40px 0;
+}
+/* === Заголовок результатов поиска === */
+.search-results-title {
+    grid-column: 1 / -1;
+    margin: 0 0 16px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #222;
+}
+
+/* === «Ничего не найдено» === */
+.search-empty {
+    grid-column: 1 / -1;              /* на всю ширину сетки */
+    text-align: center;
+    background: #fff;
+    border-radius: 12px;
+    padding: 40px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    max-width: 600px;
+    margin: 20px auto;
+}
+.search-empty-icon {
+    font-size: 56px;
+    line-height: 1;
+    margin-bottom: 12px;
+}
+.search-empty h2 {
+    margin: 0 0 10px;
+    font-size: 22px;
+    color: #333;
+}
+.search-empty p {
+    margin: 6px 0;
+    color: #555;
+    font-size: 15px;
+}
+.search-empty-hint {
+    color: #999;
+    font-size: 13px;
+    margin-bottom: 18px !important;
+}
+.search-empty .btn-add {
+    display: inline-block;
+    text-decoration: none;
+    margin-top: 8px;
+}
+
+.empty-catalog {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 40px 0;
+    font-size: 16px;
 }

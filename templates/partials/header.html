@@ -1,0 +1,29 @@
+<header>
+    <a href="/" class="logo">РЫБАLOVE</a>
+
+    {% if show_search is not defined or show_search %}
+    <form class="search-bar" action="/search" method="get" role="search">
+        <input type="text" name="q" placeholder="Поиск снастей..."
+               value="{{ request.args.get('q', '') }}">
+        <button type="submit" title="Найти">
+            <img src="/static/icons/Serch.png" alt="Поиск">
+        </button>
+    </form>
+    {% endif %}
+
+    <div class="icons">
+        <a href="/map" class="icon-link" title="Карта">
+            <img src="/static/icons/Map.png" alt="Карта">
+        </a>
+        <a href="/posts" class="icon-link" title="Лента">
+            <img src="/static/icons/Chat.png" alt="Лента">
+        </a>
+        <a href="/cart" class="icon-link cart-link" title="Корзина">
+            <img src="/static/icons/Cart.png" alt="Корзина">
+            <span class="cart-badge" id="cart-badge" style="display: none;">0</span>
+        </a>
+        <a href="/profile" class="icon-link" title="Профиль">
+            <img src="/static/icons/Profile.png" alt="Профиль">
+        </a>
+    </div>
+</header>
