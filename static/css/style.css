@@ -4,13 +4,12 @@
     src: url('../fonts/pinzelan-cyrillic.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
-    font-display: swap; /* показываем системный шрифт, пока грузится FishFont */
+    font-display: swap;
 }
 
-/* Обычный читаемый шрифт для всего сайта */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
-                 Roboto, 'Helvetica Neue', Arial, sans-serif;
+        Roboto, 'Helvetica Neue', Arial, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
@@ -18,7 +17,6 @@ body {
     line-height: 1.5;
 }
 
-/* Жёлтая панель сверху: лого + поиск + иконки */
 header {
     display: flex;
     justify-content: space-between;
@@ -29,12 +27,12 @@ header {
     gap: 20px;
 }
 
-/* Логотип «РЫБАLOVE» — единственное место с FishFont */
+/* Логотип — единственное место с FishFont */
 .logo {
     font-family: 'FishFont', cursive;
     font-weight: bold;
     font-size: 28px;
-    color: #000000;
+    color: #000;
     text-decoration: none;
     letter-spacing: 1px;
 }
@@ -43,7 +41,7 @@ header {
 .search-bar {
     display: flex;
     align-items: center;
-    flex: 1;               /* растягивается на свободное место */
+    flex: 1;
     max-width: 560px;
     background: #b15dff;
     border-radius: 6px;
@@ -56,7 +54,7 @@ header {
     background: transparent;
     border: none;
     outline: none;
-    color: #fff;           /* белый текст на фиолетовом */
+    color: #fff;
     font-family: inherit;
     font-size: 15px;
     padding: 6px 0;
@@ -74,14 +72,13 @@ header {
     display: inline-flex;
 }
 
-/* Иконка лупы делается белой через filter */
 .search-bar button img {
     width: 22px;
     height: 22px;
     filter: brightness(0) invert(1);
 }
 
-/* Группа иконок справа (карта, лента, корзина, профиль) */
+/* Иконки справа */
 .icons {
     display: flex;
     align-items: center;
@@ -100,8 +97,10 @@ header {
     height: 32px;
 }
 
-/* Красный значок количества товаров на иконке корзины */
-.cart-link { position: relative; }
+/* Красный значок на иконке корзины */
+.cart-link {
+    position: relative;
+}
 
 .cart-badge {
     position: absolute;
@@ -130,13 +129,15 @@ header {
     overflow: hidden;
 }
 
-/* Слайд скрыт, пока не получит .active */
 .slide {
     display: none;
     font-size: 24px;
     font-family: inherit;
 }
-.slide.active { display: block; }
+
+.slide.active {
+    display: block;
+}
 
 .dots {
     position: absolute;
@@ -151,9 +152,11 @@ header {
     display: inline-block;
     margin: 0 5px;
 }
-.dot.active { background: #6a0dad; }
 
-/* Адаптивная сетка: минимум 200px на карточку, тянется автоматически */
+.dot.active {
+    background: #6a0dad;
+}
+
 .catalog-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -169,7 +172,6 @@ header {
     text-align: center;
 }
 
-/* Жёлтый плейсхолдер под фото товара */
 .product-image {
     background: #f9f9b0;
     height: 150px;
@@ -182,7 +184,6 @@ header {
     overflow: hidden;
 }
 
-/* Если .product-image применён к <img>, а не к <div> */
 img.product-image {
     object-fit: cover;
     width: 100%;
@@ -193,7 +194,6 @@ img.product-image {
     color: #333;
 }
 
-/* Фиолетовая кнопка «В корзину» */
 .btn-add {
     background: #6a0dad;
     color: #fff;
@@ -205,17 +205,86 @@ img.product-image {
     font-size: 14px;
     transition: background 0.2s;
 }
-.btn-add:hover { background: #531b8c; }
 
-.cart-container,
-.posts-container {
+.btn-add:hover {
+    background: #531b8c;
+}
+
+/* Заголовок «Результаты поиска» */
+.search-results-title {
+    grid-column: 1 / -1;
+    margin: 0 0 16px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #222;
+}
+
+/* Блок «Ничего не найдено» */
+.search-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    background: #fff;
+    border-radius: 12px;
+    padding: 40px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+.search-empty-icon {
+    font-size: 56px;
+    line-height: 1;
+    margin-bottom: 12px;
+}
+
+.search-empty h2 {
+    margin: 0 0 10px;
+    font-size: 22px;
+    color: #333;
+}
+
+.search-empty p {
+    margin: 6px 0;
+    color: #555;
+    font-size: 15px;
+}
+
+.search-empty-hint {
+    color: #999;
+    font-size: 13px;
+    margin-bottom: 18px !important;
+}
+
+.search-empty .btn-add {
+    display: inline-block;
+    text-decoration: none;
+    margin-top: 8px;
+}
+
+.empty-catalog {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 40px 0;
+    font-size: 16px;
+}
+
+.cart-container {
     max-width: 900px;
     margin: 0 auto;
     padding: 20px;
 }
-.cart-container h1 { margin-top: 0; }
 
-.cart-list { display: flex; flex-direction: column; gap: 12px; }
+.cart-container h1 {
+    margin-top: 0;
+}
+
+.cart-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
 .cart-item {
     display: flex;
@@ -240,19 +309,36 @@ img.product-image {
     color: #999;
 }
 
-.cart-item-info { flex: 1; }
-.cart-item-info h3 { margin: 0 0 4px; font-size: 16px; }
-.cart-item-actions { text-align: right; }
-.subtotal { display: block; font-weight: bold; margin-bottom: 6px; }
+.cart-item-info {
+    flex: 1;
+}
+
+.cart-item-info h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+
+.cart-item-actions {
+    text-align: right;
+}
+
+.subtotal {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
 
 .cart-total {
     margin-top: 20px;
     text-align: right;
 }
-.cart-total h2 { margin: 0 0 10px; }
 
-/* Общие стили для кнопок «Очистить» и «Удалить» */
-.btn-clear, .btn-remove {
+.cart-total h2 {
+    margin: 0 0 10px;
+}
+
+.btn-clear,
+.btn-remove {
     background: #eee;
     border: none;
     padding: 8px 14px;
@@ -261,66 +347,31 @@ img.product-image {
     margin-left: 8px;
     font-family: inherit;
 }
-.btn-remove { background: #ffcdd2; color: #b71c1c; }
-.btn-clear:hover { background: #ddd; }
-.btn-remove:hover { background: #ef9a9a; }
 
-.empty-cart { text-align: center; padding: 40px 0; }
+.btn-remove {
+    background: #ffcdd2;
+    color: #b71c1c;
+}
+
+.btn-clear:hover {
+    background: #ddd;
+}
+
+.btn-remove:hover {
+    background: #ef9a9a;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 40px 0;
+}
+
 .empty-cart .btn-add {
     display: inline-block;
     text-decoration: none;
     margin-top: 10px;
 }
 
-.post-form {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-}
-.post-form h2 { margin-top: 0; }
-
-.post-form input,
-.post-form textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 8px 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 14px;
-}
-.post-form textarea { resize: vertical; }
-
-.posts-feed h2 { margin-top: 0; }
-
-/* Старая простая карточка поста (используется в /posts) */
-.post-card {
-    background: #fff;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-}
-
-.post-header {
-    display: flex;
-    justify-content: space-between;
-    color: #888;
-    font-size: 13px;
-    margin-bottom: 6px;
-}
-.post-title { margin: 0 0 6px; font-size: 18px; }
-
-/* white-space: pre-wrap — сохраняем переносы строк из textarea */
-.post-content { margin: 0; white-space: pre-wrap; }
-
-.empty-feed { color: #888; font-style: italic; }
-
-
-/* Карта занимает 80% высоты окна */
 #map {
     height: 80vh;
     width: 100%;
@@ -335,10 +386,12 @@ img.product-image {
     background: #fff;
     transition: all 0.2s;
 }
+
 .close-btn:hover {
     background: #ffcc00;
     border-color: #6a0dad;
 }
+
 .close-btn img {
     width: 40px;
     height: 40px;
@@ -351,14 +404,13 @@ img.product-image {
     position: relative;
 }
 
-/* Панель с кнопкой «Создать пост» справа */
+/* Панель с кнопкой «Создать пост» */
 .posts-toolbar {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 16px;
 }
 
-/* Круглая светло-фиолетовая кнопка «+ Создать пост» */
 .btn-create-post {
     display: inline-flex;
     align-items: center;
@@ -374,12 +426,12 @@ img.product-image {
     cursor: pointer;
     transition: background 0.15s ease, transform 0.1s ease;
 }
+
 .btn-create-post:hover {
     background: #b15dff;
     transform: translateY(-1px);
 }
 
-/* Круглая иконка «+» внутри кнопки */
 .btn-create-icon {
     display: inline-flex;
     align-items: center;
@@ -393,25 +445,28 @@ img.product-image {
     line-height: 1;
 }
 
-/* Обёртка формы — скрывается атрибутом hidden */
+/* Обёртка формы создания — скрывается атрибутом hidden */
 .post-form-wrapper {
     margin-bottom: 20px;
 }
+
 .post-form-wrapper[hidden] {
     display: none;
 }
 
-/* Форма создания поста (переопределяет базовые .post-form) */
+/* Форма создания поста */
 .post-form {
     background: #fff;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
 .post-form h2 {
     margin: 0 0 12px;
     font-size: 18px;
 }
+
 .post-form input,
 .post-form textarea {
     width: 100%;
@@ -423,16 +478,60 @@ img.product-image {
     font-family: inherit;
     font-size: 14px;
 }
+
 .post-form textarea {
     resize: vertical;
 }
+
 .post-form-actions {
     display: flex;
     gap: 8px;
     justify-content: flex-end;
 }
 
-/* Сетка карточек постов: 3 колонки на десктопе */
+/* Прячем нативный file-input */
+.post-form input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Лейбл вместо file-input — стилизованная кнопка */
+.file-input-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    border: 2px dashed #b15dff;
+    border-radius: 8px;
+    background: #faf5ff;
+    color: #6a0dad;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.file-input-label:hover {
+    background: #f3e8ff;
+    border-color: #6a0dad;
+}
+
+.file-input-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.file-input-label.has-file {
+    border-style: solid;
+    border-color: #6a0dad;
+    background: #ede4ff;
+}
+
+/* ---- Сетка карточек ---- */
 .posts-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -440,28 +539,35 @@ img.product-image {
 }
 
 @media (max-width: 900px) {
-    .posts-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 600px) {
-    .posts-grid { grid-template-columns: 1fr; }
+    .posts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
-/* Карточка поста в сетке (переопределяет базовый .post-card) */
+@media (max-width: 600px) {
+    .posts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---- Карточка поста ---- */
 .post-card {
+    position: relative;
     background: #fff;
     border-radius: 12px;
-    overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+    /* overflow: hidden убран, иначе крестик обрезается */
 }
+
 .post-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-/* Верхняя часть карточки — картинка/плейсхолдер 3:4 */
+/* Верхняя часть — картинка/плейсхолдер 3:4 */
 .post-card-image {
     width: 100%;
     aspect-ratio: 3 / 4;
@@ -470,13 +576,17 @@ img.product-image {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
 }
+
 .post-card-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
+
 .post-card-placeholder {
     color: #b3a35a;
     font-size: 14px;
@@ -485,13 +595,14 @@ img.product-image {
     text-transform: uppercase;
 }
 
-/* Нижняя часть карточки — заголовок, текст, автор */
+/* Нижняя часть — заголовок, текст, автор */
 .post-card-body {
     padding: 12px 14px 14px;
     display: flex;
     flex-direction: column;
     flex: 1;
 }
+
 .post-title {
     margin: 0 0 6px;
     font-size: 16px;
@@ -499,7 +610,7 @@ img.product-image {
     color: #222;
 }
 
-/* Обрезка длинного текста в 3 строки через -webkit-line-clamp */
+/* Обрезка текста в 3 строки */
 .post-content {
     margin: 0 0 10px;
     font-size: 14px;
@@ -512,7 +623,6 @@ img.product-image {
     overflow: hidden;
 }
 
-/* Автор и дата — прижаты к низу карточки */
 .post-meta {
     display: flex;
     justify-content: space-between;
@@ -521,7 +631,51 @@ img.product-image {
     margin-top: auto;
 }
 
-/* Фиолетовая стрелка «вниз» */
+/* ---- Кнопка удаления поста ---- */
+.post-delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+
+.post-card:hover .post-delete-btn {
+    opacity: 1;
+}
+
+.post-delete-btn:hover {
+    background: #e53935;
+    transform: scale(1.08);
+}
+
+.post-delete-btn:active {
+    transform: scale(0.95);
+}
+
+.post-delete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ---- Стрелка вниз ---- */
 .posts-scroll-down {
     display: flex;
     justify-content: center;
@@ -545,111 +699,13 @@ img.product-image {
 .posts-scroll-down img {
     width: 22px;
     height: 22px;
-    /* Если иконка чёрная — делаем её белой, чтобы была видна на фиолетовом */
     filter: brightness(0) invert(1);
 }
 
-/* Заглушка «постов нет» */
+/* ---- Заглушка «постов нет» ---- */
 .empty-feed {
     text-align: center;
     color: #888;
     font-style: italic;
     padding: 40px 0;
-}
-
-/* Заголовок «Результаты поиска «...»: N» */
-.search-results-title {
-    grid-column: 1 / -1;    /* растягиваем на всю ширину grid */
-    margin: 0 0 16px;
-    font-size: 20px;
-    font-weight: 600;
-    color: #222;
-}
-
-/* Блок «Ничего не найдено» */
-.search-empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    background: #fff;
-    border-radius: 12px;
-    padding: 40px 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    max-width: 600px;
-    margin: 20px auto;      /* центрируем по горизонтали */
-}
-.search-empty-icon {
-    font-size: 56px;
-    line-height: 1;
-    margin-bottom: 12px;
-}
-.search-empty h2 {
-    margin: 0 0 10px;
-    font-size: 22px;
-    color: #333;
-}
-.search-empty p {
-    margin: 6px 0;
-    color: #555;
-    font-size: 15px;
-}
-.search-empty-hint {
-    color: #999;
-    font-size: 13px;
-    margin-bottom: 18px !important;
-}
-.search-empty .btn-add {
-    display: inline-block;
-    text-decoration: none;
-    margin-top: 8px;
-}
-
-/* Пустой каталог без поиска */
-.empty-catalog {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: #888;
-    font-style: italic;
-    padding: 40px 0;
-    font-size: 16px;
-}
-
-/* Прячем нативный инпут */
-.post-form input[type="file"] {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* Лейбл вместо инпута — стилизованная кнопка */
-.file-input-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    margin-bottom: 10px;
-    border: 2px dashed #b15dff;
-    border-radius: 8px;
-    background: #faf5ff;
-    color: #6a0dad;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
-}
-.file-input-label:hover {
-    background: #f3e8ff;
-    border-color: #6a0dad;
-}
-.file-input-icon {
-    font-size: 18px;
-    line-height: 1;
-}
-
-/* Когда файл выбран — убираем пунктир, ставим сплошную рамку */
-.file-input-label.has-file {
-    border-style: solid;
-    border-color: #6a0dad;
-    background: #ede4ff;
 }

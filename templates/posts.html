@@ -33,7 +33,10 @@
     {# Сетка постов #}
     <section class="posts-grid" id="posts-grid">
         {% for post in posts %}
-        <article class="post-card">
+        <article class="post-card" data-post-id="{{ post.id }}">
+            <button class="post-delete-btn" onclick="deletePost('{{ post.id }}', this)" title="Удалить пост"
+                aria-label="Удалить пост">×</button>
+
             <div class="post-card-image">
                 {% if post.image_url %}
                 <img src="{{ post.image_url }}" alt="{{ post.title }}">
@@ -41,6 +44,7 @@
                 <span class="post-card-placeholder">Фото</span>
                 {% endif %}
             </div>
+
             <div class="post-card-body">
                 <h3 class="post-title">{{ post.title }}</h3>
                 <p class="post-content">{{ post.content }}</p>
@@ -75,6 +79,48 @@
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
+    // Удаление поста
+    function deletePost(postId, btn) {
+        if (!confirm('Удалить этот пост?')) return;
+
+        // Блокируем кнопку, чтобы не нажали дважды
+        btn.disabled = true;
+
+        fetch('/api/posts/' + postId, { method: 'DELETE' })
+            .then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(function (result) {
+                if (result.status !== 'success') {
+                    alert('Ошибка: ' + (result.error || 'неизвестная'));
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Удаляем карточку из DOM
+                var card = btn.closest('.post-card');
+                if (card) card.remove();
+
+                // Если постов не осталось — показать заглушку
+                var grid = document.getElementById('posts-grid');
+                if (grid && grid.children.length === 0) {
+                    var feed = document.querySelector('.posts-feed');
+                    if (feed) {
+                        var p = document.createElement('p');
+                        p.className = 'empty-feed';
+                        p.textContent = 'Пока нет постов. Стань первым! 🐟';
+                        feed.appendChild(p);
+                    }
+                }
+            })
+            .catch(function (err) {
+                console.error('Ошибка удаления:', err);
+                alert('Не удалось удалить пост');
+                btn.disabled = false;
+            });
+    }
+
     // Показываем имя выбранного файла в лейбле
     document.getElementById('post-image').addEventListener('change', function () {
         var text = document.getElementById('file-input-text');
@@ -92,7 +138,6 @@
         var content = document.getElementById('post-content').value;
         var fileInput = document.getElementById('post-image');
 
-        // FormData корректно отправит и текстовые поля, и файл
         var formData = new FormData();
         formData.append('title', title);
         formData.append('content', content);
@@ -100,7 +145,6 @@
             formData.append('image', fileInput.files[0]);
         }
 
-        // Показываем превью локально, пока идёт запрос
         var previewUrl = '';
         if (fileInput.files && fileInput.files[0]) {
             previewUrl = URL.createObjectURL(fileInput.files[0]);
@@ -120,17 +164,19 @@
                 var empty = document.querySelector('.empty-feed');
                 if (empty) empty.remove();
 
+                // Создаём карточку
                 var grid = document.getElementById('posts-grid');
                 var card = document.createElement('article');
                 card.className = 'post-card';
+                card.setAttribute('data-post-id', result.id || '');
 
-                // Используем либо URL с сервера, либо локальное превью
                 var imageSrc = result.image_url || previewUrl;
                 var imageBlock = imageSrc
                     ? '<img src="' + imageSrc + '" alt="">'
                     : '<span class="post-card-placeholder">Фото</span>';
 
                 card.innerHTML = ''
+                    + '<button class="post-delete-btn" title="Удалить пост" aria-label="Удалить пост">×</button>'
                     + '<div class="post-card-image">' + imageBlock + '</div>'
                     + '<div class="post-card-body">'
                     + '<h3 class="post-title"></h3>'
@@ -144,8 +190,15 @@
                 card.querySelector('.post-title').textContent = title;
                 card.querySelector('.post-content').textContent = content;
 
+                // Обработчик удаления на новой карточке
+                var delBtn = card.querySelector('.post-delete-btn');
+                delBtn.addEventListener('click', function () {
+                    deletePost(result.id, this);
+                });
+
                 grid.prepend(card);
 
+                // Сброс формы
                 this.reset();
                 document.getElementById('file-input-text').textContent = 'Выбрать фото с компьютера';
                 togglePostForm();

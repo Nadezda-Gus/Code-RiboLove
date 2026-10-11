@@ -3,15 +3,13 @@ import os
 import re
 import uuid
 
-from werkzeug.utils import secure_filename
-from flask import url_for
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, session
+from werkzeug.utils import secure_filename
+
 import firebase_admin
 from firebase_admin import credentials, firestore
-from google.cloud.firestore_v1 import GeoPoint
-from google.cloud.firestore_v1 import Query
-
+from google.cloud.firestore_v1 import GeoPoint, Query
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,7 +20,12 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 app = Flask(__name__)
 
+# SECRET_KEY обязателен — без него приложение не поднимется
 app.secret_key = os.environ["SECRET_KEY"]
+
+# Лимит на размер загружаемого файла
+MAX_CONTENT_LENGTH = 5 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
 
 db = None
 firebase_key_path = os.getenv("FIREBASE_KEY_PATH", "firebase_key.json")
@@ -40,12 +43,13 @@ except Exception:
     logger.exception("Ошибка подключения к Firebase")
     db = None
 
-
 def cart_count_value():
+    """Сколько всего товаров в корзине (сумма количеств)."""
     return sum(session.get("cart", {}).values())
 
 
 def require_db(f):
+    """Декоратор: возвращает 503, если БД недоступна."""
     from functools import wraps
 
     @wraps(f)
@@ -58,6 +62,7 @@ def require_db(f):
 
 
 def parse_coordinates(coord_str):
+    """Парсит строку вида '55.75 N, 37.61 E' в (lat, lng)."""
     if not coord_str:
         return None, None
     match = re.findall(r"(-?\d+(?:\.\d+)?)\s*°?\s*([NSEW])?", coord_str)
@@ -69,7 +74,6 @@ def parse_coordinates(coord_str):
     if match[1][1] in ("W", "w"):
         lng = -lng
     return lat, lng
-
 
 @app.route("/")
 def index():
@@ -88,6 +92,7 @@ def catalog():
         except Exception:
             logger.exception("Ошибка чтения товаров из Firestore")
     return render_template("catalog.html", products=products)
+
 
 @app.route("/search")
 def search():
@@ -112,6 +117,7 @@ def search():
         products=products,
         search_query=query,
     )
+
 
 @app.route("/cart")
 def cart():
@@ -172,7 +178,6 @@ def posts_page():
         except Exception:
             logger.exception("Ошибка чтения постов")
     return render_template("posts.html", posts=posts_list)
-
 
 @app.route("/api/spots")
 def get_spots():
@@ -235,21 +240,18 @@ def add_spot():
         return jsonify({"error": "Invalid data"}), 400
 
     try:
-        db.collection("fishing_spots").add(
-            {
-                "name": data["name"],
-                "latitude": float(data["lat"]),
-                "longitude": float(data["lng"]),
-                "description": data.get("description", ""),
-                "author": "User",
-            }
-        )
+        db.collection("fishing_spots").add({
+            "name": data["name"],
+            "latitude": float(data["lat"]),
+            "longitude": float(data["lng"]),
+            "description": data.get("description", ""),
+            "author": "User",
+        })
     except Exception:
         logger.exception("Ошибка добавления места")
         return jsonify({"error": "Write failed"}), 500
 
     return jsonify({"status": "success"}), 201
-
 
 @app.route("/api/cart/count")
 def cart_count():
@@ -282,13 +284,9 @@ def clear_cart():
     session.pop("cart", None)
     return jsonify({"status": "success", "cart_count": 0})
 
-
 # Куда сохраняем картинки постов
 POSTS_UPLOAD_DIR = os.path.join("static", "uploads", "posts")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
-MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB
-
-app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
 os.makedirs(POSTS_UPLOAD_DIR, exist_ok=True)
 
 
@@ -313,7 +311,6 @@ def add_post():
         if not allowed_file(file.filename):
             return jsonify({"error": "Разрешены только png, jpg, jpeg, gif, webp"}), 400
 
-        # Безопасное имя + уникальный суффикс, чтобы файлы не перезаписывали друг друга
         ext = file.filename.rsplit(".", 1)[1].lower()
         safe_name = secure_filename(file.filename.rsplit(".", 1)[0])[:40] or "img"
         unique_name = f"{safe_name}_{uuid.uuid4().hex[:8]}.{ext}"
@@ -321,24 +318,62 @@ def add_post():
         save_path = os.path.join(POSTS_UPLOAD_DIR, unique_name)
         file.save(save_path)
 
-        # Относительный URL, чтобы работал и локально, и на сервере
         image_url = f"/static/uploads/posts/{unique_name}"
 
+    # --- Запись в Firestore ---
     try:
-        db.collection("posts").add({
+        doc_ref = db.collection("posts").add({
             "title": title,
             "content": content,
             "image_url": image_url,
             "author": "Аноним",
             "created_at": firestore.SERVER_TIMESTAMP,
         })
+        # .add() возвращает (timestamp, document_id) — берём id
+        _, post_id = doc_ref
     except Exception:
         logger.exception("Ошибка записи поста")
         return jsonify({"error": "Write failed"}), 500
 
-    return jsonify({"status": "success", "image_url": image_url}), 201
+    return jsonify({
+        "status": "success",
+        "image_url": image_url,
+        "id": post_id,
+    }), 201
+
+
+@app.route("/api/posts/<post_id>", methods=["DELETE"])
+@require_db
+def delete_post(post_id):
+    try:
+        doc_ref = db.collection("posts").document(post_id)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return jsonify({"error": "Пост не найден"}), 404
+
+        data = doc.to_dict() or {}
+        image_url = data.get("image_url", "")
+
+        # Удаляем документ из Firestore
+        doc_ref.delete()
+
+        # Если была картинка — удаляем файл с диска
+        if image_url.startswith("/static/uploads/posts/"):
+            filename = os.path.basename(image_url)
+            file_path = os.path.join(POSTS_UPLOAD_DIR, filename)
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except OSError:
+                logger.exception("Не удалось удалить файл %s", file_path)
+
+        return jsonify({"status": "success"}), 200
+
+    except Exception:
+        logger.exception("Ошибка удаления поста %s", post_id)
+        return jsonify({"error": "Delete failed"}), 500
 
 
 if __name__ == "__main__":
     debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=debug)
