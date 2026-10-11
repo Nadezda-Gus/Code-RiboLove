@@ -5,7 +5,7 @@
 {% block content %}
 <div class="posts-page">
 
-    {# === Верхняя панель с кнопкой «Создать пост» === #}
+    {# Верхняя панель с кнопкой «Создать пост» #}
     <div class="posts-toolbar">
         <button class="btn-create-post" onclick="togglePostForm()">
             <span class="btn-create-icon">+</span>
@@ -13,25 +13,24 @@
         </button>
     </div>
 
-    {# === Форма создания (скрыта по умолчанию) === #}
+    {# Форма создания #}
     <div class="post-form-wrapper" id="post-form-wrapper" hidden>
         <form id="add-post-form" class="post-form">
             <h2>Поделиться уловом</h2>
-            <input type="text" id="post-title"
-                   placeholder="Заголовок (например: Щука на 5 кг!)" required>
-            <textarea id="post-content"
-                      placeholder="Расскажи, как прошла рыбалка..." rows="4" required></textarea>
-            <input type="url" id="post-image"
-                   placeholder="Ссылка на фото (необязательно)">
+            <input type="text" id="post-title" placeholder="Заголовок (например: Щука на 5 кг!)" required>
+            <textarea id="post-content" placeholder="Расскажи, как прошла рыбалка..." rows="4" required></textarea>
+            <label for="post-image" class="file-input-label">
+                <span id="file-input-text">Выбрать фото с компьютера</span>
+            </label>
+            <input type="file" id="post-image" name="image" accept="image/png,image/jpeg,image/gif,image/webp">
             <div class="post-form-actions">
                 <button type="submit" class="btn-add">Опубликовать</button>
-                <button type="button" class="btn-clear"
-                        onclick="togglePostForm()">Отмена</button>
+                <button type="button" class="btn-clear" onclick="togglePostForm()">Отмена</button>
             </div>
         </form>
     </div>
 
-    {# === Сетка постов === #}
+    {# Сетка постов #}
     <section class="posts-grid" id="posts-grid">
         {% for post in posts %}
         <article class="post-card">
@@ -54,9 +53,9 @@
         {% endfor %}
     </section>
 
-    {# === Стрелка вниз (загрузить ещё / вниз) === #}
-    <div class="posts-scroll-down" onclick="scrollDown()">
-        <span>⌄</span>
+    {# Стрелка вниз #}
+    <div class="posts-scroll-down" onclick="scrollDown()" title="Прокрутить вниз">
+        <img src="/static/icons/DownArrow.png" alt="Вниз">
     </div>
 
 </div>
@@ -76,61 +75,85 @@
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
+    // Показываем имя выбранного файла в лейбле
+    document.getElementById('post-image').addEventListener('change', function () {
+        var text = document.getElementById('file-input-text');
+        if (this.files && this.files[0]) {
+            text.textContent = this.files[0].name;
+        } else {
+            text.textContent = 'Выбрать фото с компьютера';
+        }
+    });
+
     document.getElementById('add-post-form').addEventListener('submit', function (e) {
         e.preventDefault();
 
-        var title   = document.getElementById('post-title').value;
+        var title = document.getElementById('post-title').value;
         var content = document.getElementById('post-content').value;
-        var image   = document.getElementById('post-image').value;
+        var fileInput = document.getElementById('post-image');
+
+        // FormData корректно отправит и текстовые поля, и файл
+        var formData = new FormData();
+        formData.append('title', title);
+        formData.append('content', content);
+        if (fileInput.files && fileInput.files[0]) {
+            formData.append('image', fileInput.files[0]);
+        }
+
+        // Показываем превью локально, пока идёт запрос
+        var previewUrl = '';
+        if (fileInput.files && fileInput.files[0]) {
+            previewUrl = URL.createObjectURL(fileInput.files[0]);
+        }
 
         fetch('/add_post', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: title, content: content, image_url: image })
+            body: formData
         })
-        .then(function (r) { return r.json(); })
-        .then(function (result) {
-            if (result.status !== 'success') {
-                alert('Ошибка: ' + result.error);
-                return;
-            }
+            .then(function (r) { return r.json(); })
+            .then(function (result) {
+                if (result.status !== 'success') {
+                    alert('Ошибка: ' + result.error);
+                    return;
+                }
 
-            // удаляем сообщение "пусто"
-            var empty = document.querySelector('.empty-feed');
-            if (empty) empty.remove();
+                var empty = document.querySelector('.empty-feed');
+                if (empty) empty.remove();
 
-            // создаём карточку
-            var grid = document.getElementById('posts-grid');
-            var card = document.createElement('article');
-            card.className = 'post-card';
+                var grid = document.getElementById('posts-grid');
+                var card = document.createElement('article');
+                card.className = 'post-card';
 
-            var imageBlock = image
-                ? '<img src="' + image.replace(/"/g, '&quot;') + '" alt="">'
-                : '<span class="post-card-placeholder">Фото</span>';
+                // Используем либо URL с сервера, либо локальное превью
+                var imageSrc = result.image_url || previewUrl;
+                var imageBlock = imageSrc
+                    ? '<img src="' + imageSrc + '" alt="">'
+                    : '<span class="post-card-placeholder">Фото</span>';
 
-            card.innerHTML = ''
-                + '<div class="post-card-image">' + imageBlock + '</div>'
-                + '<div class="post-card-body">'
-                +   '<h3 class="post-title"></h3>'
-                +   '<p class="post-content"></p>'
-                +   '<div class="post-meta">'
-                +     '<span class="post-author">Аноним</span>'
-                +     '<span class="post-date">Только что</span>'
-                +   '</div>'
-                + '</div>';
+                card.innerHTML = ''
+                    + '<div class="post-card-image">' + imageBlock + '</div>'
+                    + '<div class="post-card-body">'
+                    + '<h3 class="post-title"></h3>'
+                    + '<p class="post-content"></p>'
+                    + '<div class="post-meta">'
+                    + '<span class="post-author">Аноним</span>'
+                    + '<span class="post-date">Только что</span>'
+                    + '</div>'
+                    + '</div>';
 
-            card.querySelector('.post-title').textContent = title;
-            card.querySelector('.post-content').textContent = content;
+                card.querySelector('.post-title').textContent = title;
+                card.querySelector('.post-content').textContent = content;
 
-            grid.prepend(card);
+                grid.prepend(card);
 
-            this.reset();
-            togglePostForm();
-        })
-        .catch(function (err) {
-            console.error(err);
-            alert('Не удалось опубликовать пост');
-        });
+                this.reset();
+                document.getElementById('file-input-text').textContent = 'Выбрать фото с компьютера';
+                togglePostForm();
+            })
+            .catch(function (err) {
+                console.error(err);
+                alert('Не удалось опубликовать пост');
+            });
     });
 </script>
 {% endblock %}

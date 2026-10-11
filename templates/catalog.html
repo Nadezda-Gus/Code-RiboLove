@@ -7,7 +7,7 @@
 {% block content %}
 <main class="catalog-grid">
 
-    {# === Товары === #}
+    {# Товары #}
     {% for product in products %}
     <div class="product-card">
         {% if product.image_url %}
@@ -21,10 +21,10 @@
     </div>
     {% endfor %}
 
-    {# === НИЧЕГО НЕ НАЙДЕНО === #}
+    {# Ничего ненайдено #}
     {% if search_query and not products %}
     <div class="search-empty">
-        <div class="search-empty-icon">🔍</div>
+        <div class="search-empty-icon"></div>
         <h2>Ничего не найдено</h2>
         <p>По запросу «<b>{{ search_query }}</b>» ничего не найдено.</p>
         <p class="search-empty-hint">Попробуйте изменить запрос.</p>
@@ -32,9 +32,9 @@
     </div>
     {% endif %}
 
-    {# === Каталог пустой (без поиска) === #}
+    {# Каталог пустой (без поиска) #}
     {% if not search_query and not products %}
-    <p class="empty-catalog">В каталоге пока нет товаров 🎣</p>
+    <p class="empty-catalog">В каталоге пока нет товаров</p>
     {% endif %}
 
 </main>

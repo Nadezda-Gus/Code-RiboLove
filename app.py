@@ -1,7 +1,10 @@
 import logging
 import os
 import re
+import uuid
 
+from werkzeug.utils import secure_filename
+from flask import url_for
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, session
 import firebase_admin
@@ -184,22 +187,18 @@ def get_spots():
             lat = None
             lng = None
 
-            # 1. Отдельные поля latitude/longitude
             if data.get("latitude") is not None and data.get("longitude") is not None:
                 lat = data["latitude"]
                 lng = data["longitude"]
 
-            # 2. GeoPoint в поле coordinates
             coords = data.get("coordinates")
             if lat is None and isinstance(coords, GeoPoint):
                 lat = coords.latitude
                 lng = coords.longitude
 
-            # 3. Строка вида "55.75 N, 37.61 E"
             if lat is None and isinstance(coords, str):
                 lat, lng = parse_coordinates(coords)
 
-            # 4. Словарь {"lat": ..., "lng": ...}
             if lat is None and isinstance(coords, dict):
                 lat = coords.get("lat") or coords.get("latitude")
                 lng = coords.get("lng") or coords.get("longitude")
@@ -284,18 +283,52 @@ def clear_cart():
     return jsonify({"status": "success", "cart_count": 0})
 
 
+# Куда сохраняем картинки постов
+POSTS_UPLOAD_DIR = os.path.join("static", "uploads", "posts")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB
+
+app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
+os.makedirs(POSTS_UPLOAD_DIR, exist_ok=True)
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 @app.route("/add_post", methods=["POST"])
 @require_db
 def add_post():
-    data = request.get_json(silent=True) or {}
-    if not data.get("title") or not data.get("content"):
+    title = (request.form.get("title") or "").strip()
+    content = (request.form.get("content") or "").strip()
+
+    if not title or not content:
         return jsonify({"error": "Заполни все поля"}), 400
+
+    # --- Сохранение картинки ---
+    image_url = ""
+    file = request.files.get("image")
+
+    if file and file.filename:
+        if not allowed_file(file.filename):
+            return jsonify({"error": "Разрешены только png, jpg, jpeg, gif, webp"}), 400
+
+        # Безопасное имя + уникальный суффикс, чтобы файлы не перезаписывали друг друга
+        ext = file.filename.rsplit(".", 1)[1].lower()
+        safe_name = secure_filename(file.filename.rsplit(".", 1)[0])[:40] or "img"
+        unique_name = f"{safe_name}_{uuid.uuid4().hex[:8]}.{ext}"
+
+        save_path = os.path.join(POSTS_UPLOAD_DIR, unique_name)
+        file.save(save_path)
+
+        # Относительный URL, чтобы работал и локально, и на сервере
+        image_url = f"/static/uploads/posts/{unique_name}"
 
     try:
         db.collection("posts").add({
-            "title": data["title"],
-            "content": data["content"],
-            "image_url": data.get("image_url", ""),
+            "title": title,
+            "content": content,
+            "image_url": image_url,
             "author": "Аноним",
             "created_at": firestore.SERVER_TIMESTAMP,
         })
@@ -303,9 +336,9 @@ def add_post():
         logger.exception("Ошибка записи поста")
         return jsonify({"error": "Write failed"}), 500
 
-    return jsonify({"status": "success"}), 201
+    return jsonify({"status": "success", "image_url": image_url}), 201
 
 
 if __name__ == "__main__":
     debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
-    app.run(host="0.0.0.0", port=5000, debug=debug)
+    app.run(host="0.0.0.0", port=5000, debug=False)

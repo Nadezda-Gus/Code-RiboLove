@@ -4,7 +4,10 @@
 {% block head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-    #map { height: 80vh; width: 100%; }
+    #map {
+        height: 80vh;
+        width: 100%;
+    }
 </style>
 {% endblock %}
 
@@ -47,16 +50,16 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: name, lat: lat, lng: lng })
         })
-        .then(function (r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.json();
-        })
-        .then(function () {
-            addMarker(lat, lng, name);
-        })
-        .catch(function (err) {
-            alert('Не удалось сохранить: ' + err.message);
-        });
+            .then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(function () {
+                addMarker(lat, lng, name);
+            })
+            .catch(function (err) {
+                alert('Не удалось сохранить: ' + err.message);
+            });
     });
 
     fetch('/api/spots')
