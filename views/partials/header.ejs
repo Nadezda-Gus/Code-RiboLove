@@ -1,0 +1,48 @@
+<header class="flex justify-between items-center bg-fish-yellow px-5 py-2.5 border-b-2 border-fish-yellowSoft gap-5">
+    <a href="/" class="font-logo font-bold text-[28px] text-black no-underline tracking-wide">
+        РЫБАLOVE
+    </a>
+
+    <% if (typeof showSearch==="undefined" || showSearch) { %>
+        <form class="search-bar" action="/search" method="get" role="search">
+            <input type="text" name="q" placeholder="Поиск снастей..."
+                value="<%= typeof query !== 'undefined' ? query : '' %>" />
+            <button type="submit" title="Найти" class="inline-flex">
+                <img src="/static/icons/Serch.png" alt="Поиск" class="w-[22px] h-[22px] brightness-0 invert" />
+            </button>
+        </form>
+        <% } %>
+
+            <div class="flex items-center gap-2.5">
+                <a href="/map" class="inline-flex" title="Карта">
+                    <img src="/static/icons/Map.png" alt="Карта" class="w-8 h-8" />
+                </a>
+                <a href="/posts" class="inline-flex" title="Лента">
+                    <img src="/static/icons/Chat.png" alt="Лента" class="w-8 h-8" />
+                </a>
+                <a href="/cart" class="relative inline-flex" title="Корзина">
+                    <img src="/static/icons/Cart.png" alt="Корзина" class="w-8 h-8" />
+                    <span id="cart-badge" class="cart-badge"
+                        style="display: <%= cartCount > 0 ? 'inline-block' : 'none' %>;">
+                        <%= cartCount %>
+                    </span>
+                </a>
+                <% if (typeof currentUser !=='undefined' && currentUser) { %>
+                    <!-- Если вошел, показываем кнопку выхода или профиль -->
+                    <a href="/profile"
+                        class="inline-flex items-center gap-2 text-sm font-semibold ml-2 text-fish-purple hover:underline"
+                        title="Профиль">
+                        <img src="/static/icons/Profile.png" alt="Профиль" class="w-8 h-8" />
+                        <span>
+                            <%= currentUser.displayName %>
+                        </span>
+                    </a>
+                    <% } else { %>
+                        <!-- Если не вошел, ведем на страницу логина -->
+                        <a href="/login" class="inline-flex" title="Войти">
+                            <img src="/static/icons/Profile.png" alt="Войти"
+                                class="w-8 h-8 opacity-70 hover:opacity-100" />
+                        </a>
+                        <% } %>
+            </div>
+</header>

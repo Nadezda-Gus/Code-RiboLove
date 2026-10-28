@@ -1,0 +1,87 @@
+<div id="map" class="h-[80vh] w-full"></div>
+
+<!-- Подключаем стили Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<!-- Подключаем скрипт Leaflet (он должен загрузиться до нашего скрипта) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Ждем полной загрузки DOM, чтобы элемент #map точно существовал
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. Инициализация карты
+        var map = L.map('map').setView([55.75, 37.61], 5);
+
+        // 2. Слой карты (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap',
+            maxZoom: 19
+        }).addTo(map);
+
+        // 3. Защита от XSS при выводе названий
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // 4. Функция добавления маркера
+        function addMarker(lat, lng, name, description) {
+            var popup = '<b>' + escapeHtml(name) + '</b>';
+            if (description) popup += '<br>' + escapeHtml(description);
+            L.marker([lat, lng]).addTo(map).bindPopup(popup);
+        }
+
+        // 5. Обработка клика по карте (добавление новой точки)
+        map.on('click', function (e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            // Спрашиваем название
+            var name = prompt('Введите название места ловли:');
+            if (!name) return; // Если нажали "Отмена", прерываем
+
+            // Спрашиваем описание (необязательно)
+            var description = prompt('Введите описание (что клюёт, какие снасти и т.д.). Оставьте пустым, если не нужно:') || "";
+
+            fetch('/api/spots', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, description: description, lat: lat, lng: lng })
+            })
+                .then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                })
+                .then(function () {
+                    // Добавляем маркер сразу с описанием
+                    addMarker(lat, lng, name, description);
+                })
+                .catch(function (err) {
+                    alert('Не удалось сохранить: ' + err.message);
+                });
+        });
+
+        // 6. Загрузка существующих точек из базы
+        fetch('/api/spots')
+            .then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(function (data) {
+                console.log('Загружено мест из БД:', data.length);
+
+                if (!Array.isArray(data)) {
+                    console.error('Ожидался массив, пришло:', data);
+                    return;
+                }
+
+                data.forEach(function (spot) {
+                    addMarker(spot.lat, spot.lng, spot.name, spot.description);
+                });
+            })
+            .catch(function (err) {
+                console.error('Ошибка загрузки мест:', err);
+            });
+    });
+</script>

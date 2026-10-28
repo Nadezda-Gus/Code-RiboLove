@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title || "РыбаLove" %></title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <%- typeof extraHead !== "undefined" ? extraHead : "" %>
+</head>
+<body class="font-sans bg-fish-bg text-neutral-900 leading-normal">
+  <%- include("partials/header") %>
+  <main><%- body %></main>
+  <script src="/static/js/main.js"></script>
+  <%- typeof extraScripts !== "undefined" ? extraScripts : "" %>
+</body>
+</html>

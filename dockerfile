@@ -1,13 +1,20 @@
-FROM python:3.12-slim
-
+FROM node:20-alpine AS css
 WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY tailwind.config.js ./
+COPY src/input.css ./src/input.css
+COPY views ./views
+COPY public ./public
+RUN npx tailwindcss -i ./src/input.css -o ./public/css/style.css --minify
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-ENV FLASK_APP=app.py
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY src ./src
+COPY views ./views
+COPY --from=css /app/public ./public
 EXPOSE 5000
-
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["node", "src/server.js"]

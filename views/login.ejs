@@ -1,0 +1,127 @@
+<div class="max-w-md mx-auto p-6 mt-20 bg-white rounded-xl shadow-md">
+    <h1 class="text-2xl font-bold mb-6 text-center">Вход / Регистрация</h1>
+
+    <!-- Блок для вывода сообщений об ошибках или успехе -->
+    <div id="auth-message" class="mb-4 text-sm hidden p-3 rounded"></div>
+
+    <form id="auth-form" class="flex flex-col gap-4">
+        <!-- Поле для ника (скрыто по умолчанию) -->
+        <div id="nickname-group" class="hidden flex-col gap-2">
+            <input type="text" id="nickname" placeholder="Придумайте никнейм"
+                class="px-4 py-2 border rounded-lg focus:outline-none focus:border-fish-purple">
+        </div>
+
+        <input type="email" id="email" placeholder="Email" required
+            class="px-4 py-2 border rounded-lg focus:outline-none focus:border-fish-purple">
+        <input type="password" id="password" placeholder="Пароль (минимум 6 символов)" required
+            class="px-4 py-2 border rounded-lg focus:outline-none focus:border-fish-purple">
+
+        <button type="submit" id="submit-btn" class="btn-add">Войти</button>
+        <button type="button" id="toggle-mode-btn" onclick="toggleMode()"
+            class="btn-clear text-sm">Зарегистрироваться</button>
+    </form>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6T2ZwMtXJFVdJRBY554bSw3awMG__ehY",
+        authDomain: "fishlove-113ee.firebaseapp.com",
+        databaseURL: "https://fishlove-113ee-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "fishlove-113ee",
+        storageBucket: "fishlove-113ee.firebasestorage.app",
+        messagingSenderId: "676853096586",
+        appId: "1:676853096586:web:21d871658cdf6851584d73",
+        measurementId: "G-QNYZRMEW2T"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let isRegisterMode = false;
+
+    // Переключение между Входом и Регистрацией
+    window.toggleMode = function () {
+        isRegisterMode = !isRegisterMode;
+        const nicknameGroup = document.getElementById("nickname-group");
+        const nicknameInput = document.getElementById("nickname");
+        const submitBtn = document.getElementById("submit-btn");
+        const toggleBtn = document.getElementById("toggle-mode-btn");
+        const messageDiv = document.getElementById("auth-message");
+
+        messageDiv.classList.add("hidden"); // Скрываем сообщения при переключении
+
+        if (isRegisterMode) {
+            nicknameGroup.classList.remove("hidden");
+            nicknameGroup.classList.add("flex");
+            nicknameInput.required = true;
+            submitBtn.textContent = "Зарегистрироваться";
+            toggleBtn.textContent = "У меня уже есть аккаунт (Войти)";
+        } else {
+            nicknameGroup.classList.add("hidden");
+            nicknameGroup.classList.remove("flex");
+            nicknameInput.required = false;
+            submitBtn.textContent = "Войти";
+            toggleBtn.textContent = "Зарегистрироваться";
+        }
+    };
+
+    document.getElementById("auth-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const nickname = document.getElementById("nickname").value;
+        const messageDiv = document.getElementById("auth-message");
+
+        try {
+            let userCredential;
+
+            if (isRegisterMode) {
+                // РЕГИСТРАЦИЯ
+                userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const token = await userCredential.user.getIdToken();
+
+                // Отправляем токен и ник на наш сервер для создания профиля
+                const res = await fetch("/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token, nickname }),
+                });
+
+                if (!res.ok) throw new Error("Ошибка сохранения профиля на сервере");
+
+                // Если всё ок, показываем успех и переключаем на вход
+                messageDiv.textContent = "Регистрация успешна! Теперь вы можете войти.";
+                messageDiv.className = "mb-4 text-sm p-3 rounded bg-green-100 text-green-800";
+                messageDiv.classList.remove("hidden");
+
+                // Очищаем пароль и переключаем режим
+                document.getElementById("password").value = "";
+                toggleMode();
+
+            } else {
+                // ВХОД
+                userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const token = await userCredential.user.getIdToken();
+
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token }),
+                });
+
+                if (res.ok) {
+                    window.location.href = "/posts"; // Перенаправляем только при успешном входе
+                } else {
+                    throw new Error("Ошибка авторизации на сервере");
+                }
+            }
+        } catch (error) {
+            messageDiv.textContent = error.message;
+            messageDiv.className = "mb-4 text-sm p-3 rounded bg-red-100 text-red-800";
+            messageDiv.classList.remove("hidden");
+        }
+    });
+</script>

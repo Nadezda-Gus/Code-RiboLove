@@ -1,0 +1,40 @@
+<main class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-5 p-5">
+  <% if (searchQuery) { %>
+    <h2 class="col-span-full text-xl font-semibold mb-4 text-neutral-900">
+      Результаты поиска: «<%= searchQuery %>»
+    </h2>
+  <% } %>
+
+  <% products.forEach((product) => { %>
+    <div class="bg-white p-4 rounded-lg shadow-sm text-center">
+      <% if (product.image_url) { %>
+        <img src="<%= product.image_url %>" alt="<%= product.name %>"
+             class="w-full h-[150px] object-cover rounded mb-2.5" />
+      <% } else { %>
+        <div class="bg-[#f9f9b0] h-[150px] rounded mb-2.5 flex items-center justify-center text-neutral-400">
+          Фото
+        </div>
+      <% } %>
+      <h3 class="font-semibold"><%= product.name %></h3>
+      <p class="font-bold text-neutral-800"><%= product.price %> ₽</p>
+      <button class="btn-add mt-2"
+              onclick="addToCart('<%= product.id %>', this)">В корзину</button>
+    </div>
+  <% }); %>
+
+  <% if (searchQuery && products.length === 0) { %>
+    <div class="col-span-full text-center bg-white rounded-xl px-5 py-10 shadow-sm max-w-[600px] mx-auto">
+      <div class="text-5xl mb-3">🔍</div>
+      <h2 class="text-[22px] font-semibold text-neutral-800 mb-2.5">Ничего не найдено</h2>
+      <p class="text-neutral-600 text-[15px]">По запросу «<b><%= searchQuery %></b>» ничего не найдено.</p>
+      <p class="text-neutral-400 text-[13px] mb-4">Попробуйте изменить запрос.</p>
+      <a href="/catalog" class="btn-add inline-block no-underline mt-2">Показать весь каталог</a>
+    </div>
+  <% } %>
+
+  <% if (!searchQuery && products.length === 0) { %>
+    <p class="col-span-full text-center text-neutral-500 italic py-10 text-base">
+      В каталоге пока нет товаров
+    </p>
+  <% } %>
+</main>

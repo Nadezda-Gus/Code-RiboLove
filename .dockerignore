@@ -9,6 +9,9 @@ ENV/
 .venv/
 .git/
 .gitignore
+node_modules
+firebase_key.json
+public/css/style.css
 
 .env
 *.env

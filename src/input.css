@@ -1,0 +1,44 @@
+@font-face {
+  font-family: "FishFont";
+  src: url("../fonts/pinzelan-cyrillic.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .cart-badge {
+    @apply absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full min-w-[18px] h-[18px] text-xs leading-[18px] text-center px-1;
+  }
+
+  .btn-add {
+    @apply bg-fish-purple text-white border-none px-4 py-2 rounded cursor-pointer text-sm transition-colors hover:bg-[#531b8c] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-remove {
+    @apply bg-red-100 text-red-900 px-3.5 py-2 rounded cursor-pointer ml-2 hover:bg-red-200;
+  }
+
+  .btn-clear {
+    @apply bg-gray-200 px-3.5 py-2 rounded cursor-pointer ml-2 hover:bg-gray-300;
+  }
+
+  .post-content {
+    @apply text-sm text-gray-700 leading-snug flex-1 overflow-hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .search-bar {
+    @apply flex items-center flex-1 max-w-[560px] bg-fish-purpleLight rounded-md pl-3 pr-1.5 py-1 gap-1.5;
+  }
+
+  .search-bar input {
+    @apply flex-1 bg-transparent border-none outline-none text-white placeholder:text-white/75 text-[15px] py-1.5;
+  }
+}
