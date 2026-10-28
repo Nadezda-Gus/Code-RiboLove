@@ -3,7 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- 1. Заголовок -->
   <title><%= title || "РыбаLove" %></title>
+  
+  <!-- 2. Описание-->
+  <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'РыбаLove — сообщество рыболовов: делимся уловами, советами и находим лучшие снасти.' %>">
+  
+  <!-- 3. Запрет индексации для страниц с флагом noindeх -->
+  <% if (typeof noindex !== 'undefined' && noindex) { %>
+    <meta name="robots" content="noindex, nofollow">
+  <% } %>
+
   <link rel="stylesheet" href="/static/css/style.css" />
   <%- typeof extraHead !== "undefined" ? extraHead : "" %>
 </head>

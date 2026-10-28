@@ -51,6 +51,14 @@ app.use(require("./routes/cart"));
 app.use(require("./routes/spots"));
 app.use(require("./routes/posts"));
 
+app.get("/robots.txt", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "public", "robots.txt"));
+});
+
+app.get("/sitemap.xml", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "public", "sitemap.xml"));
+});
+
 // 3. Обработка 404 (должна быть в самом конце, перед ошибками)
 app.use((req, res) => {
   res.status(404).render("404", { title: "Не найдено" });

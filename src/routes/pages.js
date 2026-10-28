@@ -2,10 +2,15 @@ const express = require("express");
 const { getDb } = require("../db");
 const router = express.Router();
 
+// 1. ГЛАВНАЯ
 router.get("/", (req, res) => {
-    res.render("index", { title: "РыбаLove - Главная" });
+    res.render("index", { 
+        title: "РыбаLove — снасти и сообщество рыболовов",
+        description: "Купить снасти для рыбалки и пообщаться с рыболовами на РыбаLove."
+    });
 });
 
+// 2. КАТАЛОГ
 router.get("/catalog", async (req, res) => {
     const db = getDb();
     const products = [];
@@ -18,12 +23,14 @@ router.get("/catalog", async (req, res) => {
         }
     }
     res.render("catalog", {
-        title: "РыбаLove - Каталог",
+        title: "РыбаLove — Каталог снастей",
+        description: "Широкий выбор снастей для рыбалки: удочки, катушки, приманки.",
         products,
         searchQuery: null,
     });
 });
 
+// 3. ПОИСК
 router.get("/search", async (req, res) => {
     const db = getDb();
     const query = (req.query.q || "").trim();
@@ -46,12 +53,15 @@ router.get("/search", async (req, res) => {
         }
     }
     res.render("catalog", {
-        title: `Поиск: ${query}`,
+        title: query ? `Поиск: ${query} — РыбаLove` : "Поиск — РыбаLove",
+        description: `Результаты поиска снастей по запросу "${query}" на РыбаLove.`,
         products,
         searchQuery: query,
+        noindex: true
     });
 });
 
+// 4. КОРЗИНА
 router.get("/cart", async (req, res) => {
     const db = getDb();
     const cart = req.session.cart || {};
@@ -73,13 +83,21 @@ router.get("/cart", async (req, res) => {
             }
         }
     }
-    res.render("cart", { title: "РыбаLove - Корзина", items, total });
+    res.render("cart", { 
+        title: "Корзина — РыбаLove",
+        description: "Ваша корзина покупок на РыбаLove.",
+        items, 
+        total,
+        noindex: true
+    });
 });
 
+// 5. ПРОФИЛЬ
 router.get("/profile", (req, res) => {
     if (!req.session.user) {
-        return res.redirect("/login"); // Если не вошел — отправляем на вход
+        return res.redirect("/login");
     }
+    // Поскольку используется res.send, добавляем метатеги вручную в HTML-строку
     res.send(`
     <div class="max-w-md mx-auto mt-20 p-8 bg-white rounded-xl shadow-sm text-center">
       <h1 class="text-2xl font-bold mb-4">Профиль: ${req.session.user.displayName}</h1>
@@ -99,10 +117,15 @@ router.get("/profile", (req, res) => {
   `);
 });
 
+// 6. КАРТА
 router.get("/map", (req, res) => {
-    res.render("map", { title: "РыбаLove - Карта" });
+    res.render("map", { 
+        title: "Карта рыбных мест — РыбаLove",
+        description: "Интерактивная карта рыболовных мест сообщества РыбаLove."
+    });
 });
 
+// 7. ЛЕНТА ПОСТОВ
 router.get("/posts", async (req, res) => {
     const db = getDb();
     const posts = [];
@@ -126,7 +149,11 @@ router.get("/posts", async (req, res) => {
             console.error("Ошибка чтения постов:", e);
         }
     }
-    res.render("posts", { title: "РыбаLove - Лента", posts });
+    res.render("posts", { 
+        title: "Лента постов — РыбаLove",
+        description: "Последние уловы, советы и истории от сообщества рыболовов РыбаLove.",
+        posts 
+    });
 });
 
 module.exports = router;

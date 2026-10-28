@@ -6,10 +6,15 @@ const router = express.Router();
 // Страница логина/регистрации
 router.get("/login", (req, res) => {
     if (req.session.user) return res.redirect("/posts");
-    res.render("login", { title: "Вход в РыбаLove" });
+
+    res.render("login", {
+        title: "Вход и регистрация — РыбаLove",
+        description: "Авторизуйтесь или создайте аккаунт, чтобы делиться своими уловами.",
+        noindex: true
+    });
 });
 
-// API для входа (принимает токен от клиента)
+// API для входа
 router.post("/api/auth/login", async (req, res) => {
     const { token } = req.body;
     if (!token) return res.status(400).json({ error: "Токен не передан" });
@@ -37,7 +42,7 @@ router.post("/api/auth/login", async (req, res) => {
 
 // Выход
 router.post("/api/auth/logout", (req, res) => {
-    req.session = null; // Удаляем сессию
+    req.session = null;
     res.json({ status: "success" });
 });
 
@@ -61,10 +66,9 @@ router.post("/api/auth/register", async (req, res) => {
         const decodedToken = await admin.auth().verifyIdToken(token);
         const db = getDb();
 
-        // Сохраняем профиль в Firestore с указанным ником
         await db.collection("users").doc(decodedToken.uid).set({
             email: decodedToken.email,
-            displayName: nickname.trim(), // Используем ник, который ввел пользователь
+            displayName: nickname.trim(),
             created_at: admin.firestore.FieldValue.serverTimestamp(),
         });
 
