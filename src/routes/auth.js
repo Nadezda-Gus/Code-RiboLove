@@ -37,7 +37,7 @@ router.post("/api/auth/login", async (req, res) => {
     }
 });
 
-// Регистрация (устанавливает ник и город; email/created_at уже из getOrCreateUserProfile)
+// Регистрация
 router.post("/api/auth/register", async (req, res) => {
     const { token, nickname, city } = req.body;
     if (!token || !nickname) {
@@ -47,6 +47,10 @@ router.post("/api/auth/register", async (req, res) => {
     try {
         const decodedToken = await admin.auth().verifyIdToken(token);
         const db = getDb();
+        
+        if (!db) {
+            return res.status(503).json({ error: "База данных недоступна" });
+        }
 
         await db.collection("users").doc(decodedToken.uid).set(
             {
@@ -60,7 +64,7 @@ router.post("/api/auth/register", async (req, res) => {
         res.json({ status: "success" });
     } catch (error) {
         console.error("Ошибка регистрации:", error);
-        res.status(500).json({ error: "Не удалось создать профиль" });
+        res.status(500).json({ error: "Не удалось создать профиль: " + error.message });
     }
 });
 

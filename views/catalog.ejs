@@ -6,19 +6,24 @@
   <% } %>
 
   <% products.forEach((product) => { %>
-    <div class="bg-white p-4 rounded-lg shadow-sm text-center">
-      <% if (product.image_url) { %>
-        <img src="<%= product.image_url %>" alt="<%= product.name %>"
-             class="w-full h-[150px] object-cover rounded mb-2.5" />
-      <% } else { %>
-        <div class="bg-[#f9f9b0] h-[150px] rounded mb-2.5 flex items-center justify-center text-neutral-400">
-          Фото
-        </div>
-      <% } %>
-      <h3 class="font-semibold"><%= product.name %></h3>
-      <p class="font-bold text-neutral-800"><%= product.price %> ₽</p>
+    <div class="bg-white p-4 rounded-lg shadow-sm text-center flex flex-col">
+      
+      <a href="/product/<%= product.id %>" class="block hover:opacity-80 transition-opacity flex-1">
+        <% if (product.image_url) { %>
+          <img src="<%= product.image_url %>" alt="<%= product.name %>"
+               class="w-full h-[150px] object-cover rounded mb-2.5" />
+        <% } else { %>
+          <div class="bg-[#f9f9b0] h-[150px] rounded mb-2.5 flex items-center justify-center text-neutral-400">
+            Фото
+          </div>
+        <% } %>
+        <h3 class="font-semibold"><%= product.name %></h3>
+        <p class="font-bold text-neutral-800"><%= product.price %> ₽</p>
+      </a>
+      
       <button class="btn-add mt-2"
               onclick="addToCart('<%= product.id %>', this)">В корзину</button>
+              
     </div>
   <% }); %>
 

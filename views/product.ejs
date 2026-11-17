@@ -1,0 +1,46 @@
+<main class="max-w-4xl mx-auto px-4 py-8">
+  <a href="/catalog" class="text-fish-purple hover:underline text-sm">← Назад в каталог</a>
+
+  <div class="mt-4 bg-white rounded-xl shadow-sm p-6 grid md:grid-cols-2 gap-6">
+    <div class="aspect-square bg-neutral-100 rounded-lg flex items-center justify-center text-neutral-400">
+      Нет фото
+    </div>
+
+    <div class="flex flex-col">
+      <h1 class="text-2xl font-bold mb-2"><%= product.name %></h1>
+      <p class="text-neutral-500 mb-4 whitespace-pre-line"><%= product.description || "Описание отсутствует" %></p>
+
+      <div class="mt-auto">
+        <p class="text-3xl font-bold text-fish-purple mb-4"><%= Number(product.price) || 0 %> ₽</p>
+
+        <button
+          type="button"
+          class="btn-add w-full"
+          data-product-id="<%= product.id %>"
+          onclick="addToCart(this)">
+          В корзину
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  async function addToCart(btn) {
+    const id = btn.dataset.productId;
+    btn.disabled = true;
+    try {
+      const r = await fetch(`/api/cart/add/${id}`, { method: "POST" });
+      const data = await r.json();
+      if (data.cart_count != null) {
+        const badge = document.querySelector(".cart-badge");
+        if (badge) badge.textContent = data.cart_count;
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Не удалось добавить в корзину");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+</script>

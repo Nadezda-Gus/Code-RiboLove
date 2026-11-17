@@ -1,0 +1,18 @@
+<main class="max-w-md mx-auto mt-20 p-8 bg-white rounded-xl shadow-sm text-center">
+  <h1 class="text-2xl font-bold mb-4">Профиль: <%= currentUser.displayName %></h1>
+  <p class="text-neutral-500 mb-6"><%= currentUser.email %></p>
+  
+  <form action="/api/auth/logout" method="POST" id="logout-form">
+    <button type="submit" class="btn-remove">Выйти из аккаунта</button>
+  </form>
+  
+  <a href="/" class="block mt-4 text-fish-purple hover:underline">На главную</a>
+</main>
+
+<script>
+  document.getElementById('logout-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    fetch('/api/auth/logout', { method: 'POST' })
+      .then(() => window.location.href = '/');
+  });
+</script>

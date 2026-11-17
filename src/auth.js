@@ -1,6 +1,15 @@
 const admin = require("firebase-admin");
 const { getDb } = require("./db");
 
+// Middleware: проверяет сессию и добавляет req.user
+function requireAuth(req, res, next) {
+    if (!req.session.user) {
+        return res.status(401).json({ error: "Необходима авторизация" });
+    }
+    next();
+}
+
+// Получение данных пользователя из Firestore (или создание нового)
 async function getOrCreateUserProfile(uid, email) {
     const db = getDb();
     if (!db) return null;

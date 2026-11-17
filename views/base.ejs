@@ -1,27 +1,35 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  
-  <!-- 1. Заголовок -->
-  <title><%= title || "РыбаLove" %></title>
-  
-  <!-- 2. Описание-->
-  <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'РыбаLove — сообщество рыболовов: делимся уловами, советами и находим лучшие снасти.' %>">
-  
-  <!-- 3. Запрет индексации для страниц с флагом noindeх -->
-  <% if (typeof noindex !== 'undefined' && noindex) { %>
-    <meta name="robots" content="noindex, nofollow">
-  <% } %>
 
-  <link rel="stylesheet" href="/static/css/style.css" />
-  <%- typeof extraHead !== "undefined" ? extraHead : "" %>
+  <!-- 1. Заголовок -->
+  <title>
+    <%= title || "РыбаLove" %>
+  </title>
+
+  <!-- 2. Описание-->
+  <meta name="description"
+    content="<%= typeof description !== 'undefined' ? description : 'РыбаLove — сообщество рыболовов: делимся уловами, советами и находим лучшие снасти.' %>">
+
+  <!-- 3. Запрет индексации для страниц с флагом noindeх -->
+  <% if (typeof noindex !=='undefined' && noindex) { %>
+    <meta name="robots" content="noindex, nofollow">
+    <% } %>
+
+      <link rel="stylesheet" href="/static/css/style.css" />
+      <%- typeof extraHead !=="undefined" ? extraHead : "" %>
 </head>
+
 <body class="font-sans bg-fish-bg text-neutral-900 leading-normal">
   <%- include("partials/header") %>
-  <main><%- body %></main>
-  <script src="/static/js/main.js"></script>
-  <%- typeof extraScripts !== "undefined" ? extraScripts : "" %>
+    <main><%- body %></main>
+    <script src="/static/js/main.js"></script>
+    <%- typeof extraScripts !=="undefined" ? extraScripts : "" %>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 </body>
+
 </html>
