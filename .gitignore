@@ -10,3 +10,5 @@ firebase_key.json
 .idea/
 .DS_Store
 .gitignore
+*.pem
+*.key
