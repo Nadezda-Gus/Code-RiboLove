@@ -1,5 +1,6 @@
 const express = require("express");
 const admin = require("firebase-admin");
+const { getDb } = require("../db");
 const { getOrCreateUserProfile } = require("../auth");
 const router = express.Router();
 
@@ -20,13 +21,9 @@ router.post("/api/auth/login", async (req, res) => {
     if (!token) return res.status(400).json({ error: "Токен не передан" });
 
     try {
-        // Проверяем токен через Firebase Admin
         const decodedToken = await admin.auth().verifyIdToken(token);
-
-        // Получаем/создаем профиль в Firestore
         const userProfile = await getOrCreateUserProfile(decodedToken.uid, decodedToken.email);
 
-        // Сохраняем в сессию
         req.session.user = {
             uid: decodedToken.uid,
             email: decodedToken.email,
@@ -40,24 +37,9 @@ router.post("/api/auth/login", async (req, res) => {
     }
 });
 
-// Выход
-router.post("/api/auth/logout", (req, res) => {
-    req.session = null;
-    res.json({ status: "success" });
-});
-
-// Получение текущего пользователя (для фронтенда)
-router.get("/api/auth/me", (req, res) => {
-    if (req.session.user) {
-        res.json({ user: req.session.user });
-    } else {
-        res.json({ user: null });
-    }
-});
-
-// Регистрация (создание профиля с ником)
+// Регистрация (устанавливает ник и город; email/created_at уже из getOrCreateUserProfile)
 router.post("/api/auth/register", async (req, res) => {
-    const { token, nickname } = req.body;
+    const { token, nickname, city } = req.body;
     if (!token || !nickname) {
         return res.status(400).json({ error: "Токен или никнейм не переданы" });
     }
@@ -66,16 +48,34 @@ router.post("/api/auth/register", async (req, res) => {
         const decodedToken = await admin.auth().verifyIdToken(token);
         const db = getDb();
 
-        await db.collection("users").doc(decodedToken.uid).set({
-            email: decodedToken.email,
-            displayName: nickname.trim(),
-            created_at: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        await db.collection("users").doc(decodedToken.uid).set(
+            {
+                displayName: nickname.trim(),
+                city: (city || "").trim() || null,
+                role: "user",
+            },
+            { merge: true }
+        );
 
         res.json({ status: "success" });
     } catch (error) {
         console.error("Ошибка регистрации:", error);
         res.status(500).json({ error: "Не удалось создать профиль" });
+    }
+});
+
+// Выход
+router.post("/api/auth/logout", (req, res) => {
+    req.session = null;
+    res.json({ status: "success" });
+});
+
+// Текущий пользователь
+router.get("/api/auth/me", (req, res) => {
+    if (req.session.user) {
+        res.json({ user: req.session.user });
+    } else {
+        res.json({ user: null });
     }
 });
 
